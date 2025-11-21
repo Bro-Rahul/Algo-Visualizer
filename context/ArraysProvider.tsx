@@ -20,7 +20,7 @@ const ArraysProvider: React.FC<{
 }> = ({ children }) => {
     const ref = useRef<SVGSVGElement | null>(null);
     return (
-        <ArraysProviderContent.Provider value={{ ...initailValue, elements: [], svgRef: ref }}>
+        <ArraysProviderContent.Provider value={{ ...initailValue, svgRef: ref }}>
             {children}
         </ArraysProviderContent.Provider>
     )

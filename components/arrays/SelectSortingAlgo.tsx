@@ -10,8 +10,9 @@ import React, { useState } from "react"
 import useArraysProvider from "@/hooks/useArraysProvider"
 
 const SelectSortingAlgo: React.FC<{
-    children?: React.ReactNode
-}> = ({ children }) => {
+    children?: React.ReactNode,
+    isSorting: boolean
+}> = ({ children, isSorting }) => {
     const [selectedAlgo, setSelectedAlgo] = useState<SortingAlgo>("BubbleSort");
     const { sortingStrategy } = useArraysProvider();
     const handleSelect = (algo: string) => {
@@ -19,9 +20,9 @@ const SelectSortingAlgo: React.FC<{
         setSelectedAlgo(algo as SortingAlgo);
     }
     return (
-        <section className="absolute top-2 right-[5%] flex flex-row gap-2 items-center justify-center">
+        <section className="flex flex-row gap-2 items-center justify-center">
             {children}
-            <Select defaultValue={selectedAlgo} onValueChange={handleSelect}>
+            <Select disabled={isSorting} defaultValue={selectedAlgo} onValueChange={handleSelect}>
                 <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Select Algo" />
                 </SelectTrigger>

@@ -1,6 +1,7 @@
 import { SortingAlgo } from "@/types/arrays";
 import * as d3 from "d3"
-import { swap } from ".";
+import { drawDownWardArrow, drawUpwardPointer, swap } from ".";
+import { ArraysPsudoCodes } from "@/constants/data";
 
 
 interface BaseSorter {
@@ -18,23 +19,34 @@ class BubbleSortAlgo implements BaseSorter {
     psudoCode: string;
 
     constructor() {
-        this.psudoCode = `for i from 0 to Array.length - 1
-    set swapped to false
-    for j from 0 to Array.length - i - 1
-      if Array[j] > Array[j + 1]
-        swap Array[j] and Array[j + 1]
-        set swapped to true
-    if not swapped
-        break // Array is sorted`;
+        this.psudoCode = ArraysPsudoCodes.BubbleSort;
     }
 
     async sort<T extends d3.BaseType>(nodes: T[], elements: number[], callback: (lineNumber: number) => void): Promise<void> {
         let swapped = false;
+        const node = d3.select(nodes[0]);
+        const positions = node.attr("transform").match(/translate\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/)!;
+        const width = +node.select("rect").attr("width") + 5;
+        const height = +node.select("rect").attr("height");
+        const xCoordinate = +positions[1] + width / 2;
+
+        const pointerI = drawUpwardPointer("i");
+        const pointerJ = drawDownWardArrow("j");
+        const pointerk = drawDownWardArrow("k");
+
+        pointerI?.attr("transform", `translate(${xCoordinate}, ${20})`);
+        pointerJ?.attr("transform", `translate(${xCoordinate},${+positions[2]})`)
+        pointerk?.attr("transform", `translate(${xCoordinate},${+positions[2]})`)
+
+
         for (let i = 0; i < elements.length; i++) {
             callback(0);
+            pointerI?.attr("transform", `translate(${xCoordinate + i * width},${height * 2})`)
             await wait(100);
             swapped = false;
             for (let j = 0; j < elements.length - 1 - i; j++) {
+                pointerJ?.attr("transform", `translate(${xCoordinate + j * width},${+positions[2] + height + 10})`)
+                pointerk?.attr("transform", `translate(${xCoordinate + (j + 1) * width},${+positions[2] + height + 10})`)
                 callback(2);
                 await wait(100);
                 callback(3)
@@ -53,7 +65,9 @@ class BubbleSortAlgo implements BaseSorter {
                 break;
             }
         }
-
+        pointerI?.remove();
+        pointerJ?.remove();
+        pointerk?.remove();
         callback(-1);
     }
 }
@@ -61,10 +75,26 @@ class BubbleSortAlgo implements BaseSorter {
 class InsertionSortAlgo implements BaseSorter {
     psudoCode: string;
     constructor() {
-        this.psudoCode = "";
+        this.psudoCode = ArraysPsudoCodes.InsertionSort;
     }
     async sort<T extends d3.BaseType>(nodes: T[], elements: number[], callback: (lineNumber: number) => void): Promise<void> {
-        console.log("inside the Insertion Sort algo");
+        for (let i = 1; i < elements.length; i++) {
+            callback(0);
+            await wait(100);
+            let key = elements[i];
+            let j = i - 1;
+            while (j >= 0 && elements[j] > key) {
+                callback(3);
+                await wait(100);
+                await swap(nodes, j + 1, j);
+                callback(4);
+                await wait(100);
+                elements[j + 1] = elements[j];
+                j = j - 1;
+            }
+            elements[j + 1] = key;
+        }
+        callback(-1);
     }
 }
 
@@ -90,23 +120,29 @@ class QuickSortAlgo implements BaseSorter {
 
 export class SorterStrategy {
     public sorter: BaseSorter;
+    public algoName: string;
     constructor() {
         this.sorter = new BubbleSortAlgo();
+        this.algoName = "Bubble Sort"
     }
 
     setSorter(algo: SortingAlgo) {
         switch (algo) {
             case "BubbleSort":
                 this.sorter = new BubbleSortAlgo();
+                this.algoName = "Bubble Sort";
                 break;
             case "InsertionSort":
                 this.sorter = new InsertionSortAlgo();
+                this.algoName = "Insertion Sort";
                 break;
             case "SelectionSort":
                 this.sorter = new SelectionSortAlgo();
+                this.algoName = "Selection Sort"
                 break;
             case "QuickSort":
                 this.sorter = new QuickSortAlgo();
+                this.algoName = "Quick Sort"
                 break;
             default:
                 break;

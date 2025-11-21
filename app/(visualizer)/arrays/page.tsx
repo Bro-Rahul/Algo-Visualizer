@@ -1,32 +1,20 @@
 "use client"
 import ArraysCanvas from "@/components/arrays/ArraysCanvas"
 import ArraysOperationMenus from "@/components/arrays/ArraysOperationMenus";
-import PsudoCodeViewer from "@/components/arrays/PsudoCodeViewer";
-import SelectSortingAlgo from "@/components/arrays/SelectSortingAlgo";
-import { Button } from "@/components/ui/button";
-import useArraysProvider from "@/hooks/useArraysProvider"
-import { useState, Activity } from "react";
+import SortingController from "@/components/arrays/SortingController";
+import { useState } from "react";
 
 const page = () => {
-    const { elements, sortingStrategy } = useArraysProvider();
+    // here the lineNumber is Use to highlight the psudocode to which out algo is running so we can also use it to check weather it is sorting or not -1 for not sorting val >-1 is for sorting.
     const [lineNumber, setLineNumber] = useState<number>(-1);
-
-
     const highlightLineNumber = (lineNumber: number) => {
         setLineNumber(lineNumber);
     }
-
-    const handleSort = async () => {
-        await sortingStrategy.performSorting(elements, highlightLineNumber)
-    }
     return (
-        <div className="flex w-full h-screen">
+        <div className="flex w-full h-screen gap-2">
             <ArraysOperationMenus isSorting={lineNumber !== -1} />
             <ArraysCanvas />
-            <PsudoCodeViewer psudoCode={sortingStrategy.sorter.psudoCode} highlightLine={lineNumber} isAlgoRunning={lineNumber !== -1} />
-            <SelectSortingAlgo>
-                <Button onClick={handleSort} className="px-5 py-2 cursor-pointer bg-white text-black rounded-xl ">Sort</Button>
-            </SelectSortingAlgo>
+            <SortingController highlightCurrentLine={highlightLineNumber} currentLine={lineNumber} />
         </div>
     )
 }

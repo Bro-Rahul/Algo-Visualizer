@@ -1,4 +1,5 @@
 import * as d3 from "d3"
+import gsap from "gsap";
 
 export const generateRandomNumbers = (total: number = 5) => {
     return Array.from({ length: total }, () => Math.round(Math.random() * 100));
@@ -48,42 +49,164 @@ export const generateArrays = (elements: number[]) => {
         .attr("font-size", "18px")
         .text(d => d);
 };
+export const drawUpwardPointer = (
+    label: string,
+) => {
+    const svg = d3.select("svg");
+    const selection = svg.select("g");
 
+    const transform = selection.attr("transform");
+    if (!transform) return;
+
+    const match = transform.match(/translate\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/);
+    if (!match) return;
+
+    const x = +match[1];
+    const y = +match[2];
+
+    const arrowY = y - 60;   // move arrow *above* the element
+
+    const grp = svg.append("g")
+        .attr("transform", `translate(${x}, ${arrowY})`);
+
+    // Upward arrow (tail down → pointing up)
+    grp.append("path")
+        .attr("d", `
+            M0 40      
+            L0 0
+            M-10 12
+            L0 0
+            L10 12
+        `)
+        .attr("stroke", "white")
+        .attr("stroke-width", 3)
+        .attr("fill", "none");
+
+    grp.append("text")
+        .attr("x", 0)
+        .attr("y", -20)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("fill", "white")
+        .style("font-size", "14px")
+        .text(label);
+
+    return grp;
+};
+
+
+export const drawDownWardArrow = (
+    lable: string,
+) => {
+    const svg = d3.select("svg");
+    const selection = svg.select("g")
+    const transform = selection.attr("transform");
+    if (!transform) return;
+
+    const match = transform.match(/translate\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/);
+    if (!match) return;
+
+    const x = +match[1];
+    const y = +match[2];
+
+    const arrowY = y + 60;
+
+    const grp = svg.append("g")
+        .attr("transform", `translate(${x}, ${arrowY})`);
+
+    // Tail length increased from 20 → 40
+    grp.append("path")
+        .attr("d", `
+                M0 0 
+                L0 40        
+                M-10 28 
+                L0 40 
+                L10 28
+            `)
+        .attr("stroke", "white")
+        .attr("stroke-width", 3)
+        .attr("fill", "none");
+
+    grp.append("text")
+        .attr("x", 0)
+        .attr("y", 60)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("fill", "white")
+        .style("font-size", "14px")
+        .text(lable)
+
+    return grp;
+};
 
 
 export const swap = async <T extends d3.BaseType>(nodes: T[], i: number, j: number) => {
     const srcNodeGrp = d3.select(nodes[i]);
     const targetNodeGrp = d3.select(nodes[j]);
 
-    const srcCoordinate = srcNodeGrp.attr("transform").match(/translate\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/)!;
-    const targetCoordinates = targetNodeGrp.attr("transform").match(/translate\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/)!;
-    const srcX = +srcCoordinate[1];
-    const targetX = +targetCoordinates[1];
-    const y = +targetCoordinates[2];
+    const srcMatch = srcNodeGrp.attr("transform")!.match(/translate\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/)!;
+    const tgtMatch = targetNodeGrp.attr("transform")!.match(/translate\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/)!;
+
+    const srcX = +srcMatch[1];
+    const srcY = +srcMatch[2];
+    const targetX = +tgtMatch[1];
+    const targetY = +tgtMatch[2];
 
     srcNodeGrp.select("rect").attr("fill", "orange");
     targetNodeGrp.select("rect").attr("fill", "red");
 
+    const srcNode = srcNodeGrp.node()!;
+    const targetNode = targetNodeGrp.node()!;
 
-    await Promise.all([
-        srcNodeGrp.transition().duration(300).attr("transform", `translate(${+srcX},${y + 100})`).end(),
-        targetNodeGrp.transition().duration(300).attr("transform", `translate(${+targetX},${y - 100})`).end(),
-    ]);
+    // --- GSAP TIMELINE THAT PRESERVES TRANSLATE() ---
+    const tl = gsap.timeline();
 
-    await Promise.all([
-        srcNodeGrp.transition().duration(300).attr("transform", `translate(${targetX},${y + 100})`).end(),
-        targetNodeGrp.transition().duration(300).attr("transform", `translate(${+srcX},${y - 100})`).end(),
-    ]);
+    // 1. Move vertically apart
+    tl.to(srcNode, {
+        duration: 0.3,
+        attr: { transform: `translate(${srcX},${srcY + 100})` },
+        ease: "power2.out"
+    }, 0);
 
-    await Promise.all([
-        srcNodeGrp.transition().duration(300).attr("transform", `translate(${targetX},${y})`).end(),
-        targetNodeGrp.transition().duration(300).attr("transform", `translate(${srcX},${y})`).end(),
-    ]);
+    tl.to(targetNode, {
+        duration: 0.3,
+        attr: { transform: `translate(${targetX},${targetY - 100})` },
+        ease: "power2.out"
+    }, 0);
+
+    // 2. Swap horizontally
+    tl.to(srcNode, {
+        duration: 0.3,
+        attr: { transform: `translate(${targetX},${srcY + 100})` },
+        ease: "power2.out"
+    });
+
+    tl.to(targetNode, {
+        duration: 0.3,
+        attr: { transform: `translate(${srcX},${targetY - 100})` },
+        ease: "power2.out"
+    }, "<");
+
+    // 3. Move back vertically
+    tl.to(srcNode, {
+        duration: 0.3,
+        attr: { transform: `translate(${targetX},${targetY})` },
+        ease: "power2.out"
+    });
+
+    tl.to(targetNode, {
+        duration: 0.3,
+        attr: { transform: `translate(${srcX},${srcY})` },
+        ease: "power2.out"
+    }, "<");
+
+    await tl.then();
 
     srcNodeGrp.select("rect").attr("fill", "transparent");
     targetNodeGrp.select("rect").attr("fill", "transparent");
 
+    // Swap array positions
     const temp = nodes[i];
     nodes[i] = nodes[j];
     nodes[j] = temp;
-}
+};
