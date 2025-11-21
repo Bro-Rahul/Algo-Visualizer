@@ -63,7 +63,6 @@ export const swap = async <T extends d3.BaseType>(nodes: T[], i: number, j: numb
 
     srcNodeGrp.select("rect").attr("fill", "orange");
     targetNodeGrp.select("rect").attr("fill", "red");
-    console.log("indside this swap function")
 
 
     await Promise.all([
