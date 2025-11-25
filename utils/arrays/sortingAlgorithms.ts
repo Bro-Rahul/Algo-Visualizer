@@ -114,7 +114,21 @@ class QuickSortAlgo implements BaseSorter {
         this.psudoCode = "";
     }
     async sort<T extends d3.BaseType>(nodes: T[], elements: number[], callback: (lineNumber: number) => void): Promise<void> {
-        console.log("Inside the quickSort Algo");
+        let n = elements.length;
+        for (let i = 0; i < n - 1; i++) {
+
+            let min_idx = i;
+
+            for (let j = i + 1; j < n; j++) {
+                if (elements[j] < elements[min_idx]) {
+                    min_idx = j;
+                }
+            }
+
+            let temp = elements[i];
+            elements[i] = elements[min_idx];
+            elements[min_idx] = temp;
+        }
     }
 }
 
@@ -153,4 +167,32 @@ export class SorterStrategy {
         const nodes = d3.select("svg").selectAll("g").nodes();
         this.sorter.sort(nodes, elements, callback);
     }
+}
+
+export function selectionSort(arr: number[]): number[][] {
+    const sortingSequence: number[][] = [];
+    let n = arr.length;
+    for (let i = 0; i < n - 1; i++) {
+
+        // Assume the current position holds
+        // the minimum element
+        let min_idx = i;
+
+        // Iterate through the unsorted portion
+        // to find the actual minimum
+        for (let j = i + 1; j < n; j++) {
+            if (arr[j] < arr[min_idx]) {
+                // Update min_idx if a smaller element is found
+                min_idx = j;
+            }
+        }
+
+        // Move minimum element to its
+        // correct position
+        sortingSequence.push([i, min_idx]);
+        let temp = arr[i];
+        arr[i] = arr[min_idx];
+        arr[min_idx] = temp;
+    }
+    return sortingSequence;
 }

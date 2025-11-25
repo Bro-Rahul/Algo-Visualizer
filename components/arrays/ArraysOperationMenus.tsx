@@ -1,7 +1,7 @@
 import useArraysProvider from "@/hooks/useArraysProvider";
 import { generateArrays, generateRandomNumbers } from "@/utils/arrays";
 import clsx from "clsx"
-import React, { Activity, useState } from "react"
+import React, { Activity, useEffect, useState } from "react"
 import { Button } from "../ui/button";
 
 const ArraysOperationMenus: React.FC<{
@@ -16,6 +16,11 @@ const ArraysOperationMenus: React.FC<{
         elements.push(...generateRandomNumbers(10))
         generateArrays(elements)
     }
+
+    useEffect(() => {
+        elements.push(...generateRandomNumbers(3))
+        generateArrays(elements)
+    }, [])
 
     return (
         <div className='w-[5%] h-screen flex flex-col items-center justify-center'>

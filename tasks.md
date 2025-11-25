@@ -10,6 +10,8 @@
 - Add Selection Sort 
 - Add Quick Sort 
 - Add Merged Sort
+- Create an Constants variable that will tell about all the dimenstion.(fields values like width,height,borders,etc).
+- Fix the bug that happen after re-clicking the sort btn once the array are sorted (pre-check the array weather it is sorted our not)
 - Final Task for this section `Create an document Page Blog page` that will guide the algoritms details 
 
 

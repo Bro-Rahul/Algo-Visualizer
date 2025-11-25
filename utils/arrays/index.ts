@@ -139,13 +139,15 @@ export const drawDownWardArrow = (
     return grp;
 };
 
+export const parseTransformAttribute = /translate\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/;
+
 
 export const swap = async <T extends d3.BaseType>(nodes: T[], i: number, j: number) => {
     const srcNodeGrp = d3.select(nodes[i]);
     const targetNodeGrp = d3.select(nodes[j]);
 
-    const srcMatch = srcNodeGrp.attr("transform")!.match(/translate\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/)!;
-    const tgtMatch = targetNodeGrp.attr("transform")!.match(/translate\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/)!;
+    const srcMatch = srcNodeGrp.attr("transform")!.match(parseTransformAttribute)!;
+    const tgtMatch = targetNodeGrp.attr("transform")!.match(parseTransformAttribute)!;
 
     const srcX = +srcMatch[1];
     const srcY = +srcMatch[2];
