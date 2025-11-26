@@ -1,5 +1,8 @@
 import * as d3 from "d3"
 import gsap from "gsap";
+import { ArraysElementsDimentions } from "@/constants/data";
+
+const { gap, height, width, roundedEdge, strokeColor, strokeWidth } = ArraysElementsDimentions;
 
 export const generateRandomNumbers = (total: number = 5) => {
     return Array.from({ length: total }, () => Math.round(Math.random() * 100));
@@ -16,13 +19,13 @@ export const generateArrays = (elements: number[]) => {
                 .call(sel =>
                     sel.transition()
                         .duration(100)
-                        .attr("transform", (d, i) => `translate(${(i + 1) * 55},150)`)
+                        .attr("transform", (d, i) => `translate(${(i + 1) * (width + gap)},150)`)
                 ),
 
             update => update
                 .transition()
                 .duration(100)
-                .attr("transform", (d, i) => `translate(${(i + 1) * 55},150)`),
+                .attr("transform", (d, i) => `translate(${(i + 1) * (width + gap)},150)`),
 
             exit => exit.remove()
         );
@@ -30,12 +33,12 @@ export const generateArrays = (elements: number[]) => {
     grps.selectAll("rect")
         .data(d => [d])
         .join("rect")
-        .attr("width", 50)
-        .attr("height", 50)
-        .attr("rx", 8)
-        .attr("ry", 8)
-        .attr("stroke", "white")
-        .attr("stroke-width", 2)
+        .attr("width", width)
+        .attr("height", height)
+        .attr("rx", roundedEdge)
+        .attr("ry", roundedEdge)
+        .attr("stroke", strokeColor)
+        .attr("stroke-width", strokeWidth)
         .attr("fill", "transparent");
 
     // LABELS
@@ -49,7 +52,7 @@ export const generateArrays = (elements: number[]) => {
         .attr("font-size", "18px")
         .text(d => d);
 };
-export const drawUpwardPointer = (
+export const drawUpwardArrow = (
     label: string,
 ) => {
     const svg = d3.select("svg");
@@ -64,10 +67,9 @@ export const drawUpwardPointer = (
     const x = +match[1];
     const y = +match[2];
 
-    const arrowY = y - 60;   // move arrow *above* the element
-
     const grp = svg.append("g")
-        .attr("transform", `translate(${x}, ${arrowY})`);
+        .attr("class", "pointer")
+        .attr("transform", `translate(${x + (width + gap) / 2}, ${y - height})`);
 
     // Upward arrow (tail down → pointing up)
     grp.append("path")
@@ -112,7 +114,8 @@ export const drawDownWardArrow = (
     const arrowY = y + 60;
 
     const grp = svg.append("g")
-        .attr("transform", `translate(${x}, ${arrowY})`);
+        .attr("class", "pointer")
+        .attr("transform", `translate(${x + (width + gap) / 2}, ${arrowY})`);
 
     // Tail length increased from 20 → 40
     grp.append("path")

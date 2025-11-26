@@ -7,18 +7,19 @@ import { selectionSort } from '@/utils/arrays/sortingAlgorithms'
 import gsap from 'gsap'
 import * as d3 from "d3"
 import { parseTransformAttribute } from '@/utils/arrays'
+import { SelectionSort } from '@/utils/arrays/animations'
+import useArraySorter from '@/hooks/useArraySorter'
 
 const SortingController: React.FC<{
     highlightCurrentLine: (lineNumber: number) => void
     currentLine: number,
 }> = ({ highlightCurrentLine, currentLine }) => {
-    const { sortingStrategy, elements } = useArraysProvider();
+    const { sortingStrategy, elements, tl } = useArraysProvider();
     /* const handleSort = async () => {
         await sortingStrategy.performSorting(elements, highlightCurrentLine);
     } */
 
-    const tl = gsap.timeline();
-    const handleSelectionSort = () => {
+    /* const handleSelectionSort = () => {
         const sequence = selectionSort(elements);
         const nodes = d3.select("svg").selectAll("g").nodes();
 
@@ -95,24 +96,23 @@ const SortingController: React.FC<{
             }
         });
 
-    };
-
+    }; */
 
 
     return (
         <div className='h-screen w-fit absolute top-0 right-0 flex flex-col justify-between py-5 items-end px-3'>
             <SelectSortingAlgo isSorting={currentLine !== -1}>
                 {/* <Button disabled={currentLine !== -1} onClick={handleSort} className="px-5 py-2 cursor-pointer bg-white text-black rounded-xl ">Sort</Button> */}
-                <Button disabled={currentLine !== -1} onClick={handleSelectionSort} className="px-5 py-2 cursor-pointer bg-white text-black rounded-xl ">Selection Sort</Button>
+                <Button onClick={() => sortingStrategy.performSorting(elements)} disabled={currentLine !== -1} className="px-5 py-2 cursor-pointer bg-white text-black rounded-xl ">Selection Sort</Button>
                 <Button disabled={currentLine !== -1} onClick={() => {
-                    if (tl.paused()) {
-                        tl.play()
+                    if (sortingStrategy.sorter.isPaused()) {
+                        sortingStrategy.sorter.play();
                     } else {
-                        tl.pause();
+                        sortingStrategy.sorter.stop();
                     }
                 }} className="px-5 py-2 cursor-pointer bg-white text-black rounded-xl ">STOP</Button>
             </SelectSortingAlgo>
-            <PsudoCodeViewer psudoCode={sortingStrategy.sorter.psudoCode} algoName={sortingStrategy.algoName} highlightLine={currentLine} isAlgoRunning={currentLine !== -1} />
+            <PsudoCodeViewer psudoCode={''} algoName={sortingStrategy.algoName} highlightLine={currentLine} isAlgoRunning={currentLine !== -1} />
         </div>
     )
 }
