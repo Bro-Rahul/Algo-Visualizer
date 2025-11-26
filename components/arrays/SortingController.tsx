@@ -1,118 +1,60 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PsudoCodeViewer from './PsudoCodeViewer'
-import SelectSortingAlgo from './SelectSortingAlgo'
 import useArraysProvider from '@/hooks/useArraysProvider'
 import { Button } from '../ui/button'
-import { selectionSort } from '@/utils/arrays/sortingAlgorithms'
-import gsap from 'gsap'
-import * as d3 from "d3"
-import { parseTransformAttribute } from '@/utils/arrays'
-import { SelectionSort } from '@/utils/arrays/animations'
-import useArraySorter from '@/hooks/useArraySorter'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { SortingAlgo } from "@/types/arrays"
+import clsx from 'clsx'
 
 const SortingController: React.FC<{
-    highlightCurrentLine: (lineNumber: number) => void
-    currentLine: number,
-}> = ({ highlightCurrentLine, currentLine }) => {
-    const { sortingStrategy, elements, tl } = useArraysProvider();
-    /* const handleSort = async () => {
-        await sortingStrategy.performSorting(elements, highlightCurrentLine);
-    } */
+    isSorting: boolean,
+    setIsSorting: React.Dispatch<React.SetStateAction<boolean>>
+}> = ({ isSorting, setIsSorting }) => {
+    const { sortingStrategy, elements } = useArraysProvider();
+    const [selectedAlgo, setSelectedAlgo] = useState<SortingAlgo>("SelectionSort");
 
-    /* const handleSelectionSort = () => {
-        const sequence = selectionSort(elements);
-        const nodes = d3.select("svg").selectAll("g").nodes();
+    const handleSelect = (algo: string) => {
+        sortingStrategy.setSorter(algo as SortingAlgo)
+        setSelectedAlgo(algo as SortingAlgo);
+    }
 
-        console.log(sequence);
-        // Extract original X & Y
-        const firstTransform = d3.select(nodes[0])
-            .attr("transform")
-            .match(parseTransformAttribute)!;
+    const handleSortingClick = () => {
+        setIsSorting(pre => !pre)
+        sortingStrategy.performSorting(elements, () => setIsSorting(pre => !pre))
+    }
 
-        const baseX = +firstTransform[1];
-        const baseY = +firstTransform[2];
-        const LIFT_Y = 100;
-        const animation = sequence.map(([srcIdx, targetIdx]) => {
-            if (srcIdx !== targetIdx) {
-                const srcGrp = d3.select(nodes[srcIdx]);
-                const targetGrp = d3.select(nodes[targetIdx]);
-
-                tl.to(srcGrp.node(), {
-                    duration: .6,
-                    attr: {
-                        transform: `translate(${baseX + 55 * srcIdx},${LIFT_Y})`
-                    },
-                    onStart: () => {
-                        srcGrp.select("rect").attr("fill", "red")
-                    }
-                })
-                tl.to(targetGrp.node(), {
-                    duration: .6,
-                    attr: {
-                        transform: `translate(${baseX + 55 * targetIdx},${LIFT_Y})`
-                    },
-                    onStart: () => {
-                        targetGrp.select("rect").attr("fill", "orange")
-                    }
-                }, "<")
-
-                tl.to(srcGrp.node(), {
-                    duration: .6,
-                    attr: {
-                        transform: `translate(${baseX + 55 * targetIdx},${LIFT_Y})`
-                    },
-                })
-                tl.to(targetGrp.node(), {
-                    duration: .6,
-                    attr: {
-                        transform: `translate(${baseX + 55 * srcIdx},${LIFT_Y})`
-                    }
-                }, "<")
-
-
-
-                tl.to(srcGrp.node(), {
-                    duration: .6,
-                    attr: {
-                        transform: `translate(${baseX + 55 * targetIdx},${baseY})`
-                    },
-                    onComplete: () => {
-                        srcGrp.select("rect").attr("fill", "transparent")
-                    }
-                })
-                tl.to(targetGrp.node(), {
-                    duration: .6,
-                    attr: {
-                        transform: `translate(${baseX + 55 * srcIdx},${baseY})`
-                    },
-                    onComplete: () => {
-                        targetGrp.select("rect").attr("fill", "transparent")
-                    }
-                }, "<")
-
-                const temp = nodes[srcIdx];
-                nodes[srcIdx] = nodes[targetIdx];
-                nodes[targetIdx] = temp;
-            }
-        });
-
-    }; */
-
+    const handlePlayAndPause = () => {
+        if (sortingStrategy.sorter.isPaused()) {
+            sortingStrategy.sorter.play();
+        } else {
+            sortingStrategy.sorter.stop();
+        }
+    }
 
     return (
         <div className='h-screen w-fit absolute top-0 right-0 flex flex-col justify-between py-5 items-end px-3'>
-            <SelectSortingAlgo isSorting={currentLine !== -1}>
-                {/* <Button disabled={currentLine !== -1} onClick={handleSort} className="px-5 py-2 cursor-pointer bg-white text-black rounded-xl ">Sort</Button> */}
-                <Button onClick={() => sortingStrategy.performSorting(elements)} disabled={currentLine !== -1} className="px-5 py-2 cursor-pointer bg-white text-black rounded-xl ">Selection Sort</Button>
-                <Button disabled={currentLine !== -1} onClick={() => {
-                    if (sortingStrategy.sorter.isPaused()) {
-                        sortingStrategy.sorter.play();
-                    } else {
-                        sortingStrategy.sorter.stop();
-                    }
-                }} className="px-5 py-2 cursor-pointer bg-white text-black rounded-xl ">STOP</Button>
-            </SelectSortingAlgo>
-            <PsudoCodeViewer psudoCode={''} algoName={sortingStrategy.algoName} highlightLine={currentLine} isAlgoRunning={currentLine !== -1} />
+            <section className="flex flex-row gap-2 items-center justify-center">
+                <Button disabled={isSorting} onClick={handleSortingClick} className="px-5 py-2 cursor-pointer bg-white text-black rounded-xl ">Sort</Button>
+                <Button onClick={handlePlayAndPause} className={clsx("px-5 py-2 cursor-pointer bg-white text-black rounded-xl", !isSorting && "hidden")}>STOP</Button>
+                <Select disabled={isSorting} defaultValue={selectedAlgo} onValueChange={handleSelect}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select Algo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="BubbleSort">Bubble Sort</SelectItem>
+                        <SelectItem value="InsertionSort">Insertion Sort</SelectItem>
+                        <SelectItem value="SelectionSort">Selection Sort</SelectItem>
+                        <SelectItem value="QuickSort">QuickSort Sort</SelectItem>
+                    </SelectContent>
+                </Select>
+            </section>
+            <PsudoCodeViewer isAlgoRunning={isSorting} psudoCode={sortingStrategy.sorter.psudoCode} algoName={sortingStrategy.algoName} />
         </div>
     )
 }

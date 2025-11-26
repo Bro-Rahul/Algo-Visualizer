@@ -4,7 +4,7 @@ import { generateArrays } from "@/utils/arrays";
 
 const useArraysProvider = () => {
 
-    const { elements, svgRef, sortingStrategy, tl } = useContext(ArraysProviderContent);
+    const { elements, svgRef, sortingStrategy } = useContext(ArraysProviderContent);
 
 
     const insertNewElement = () => {
@@ -16,7 +16,6 @@ const useArraysProvider = () => {
         elements,
         svgRef,
         sortingStrategy,
-        tl,
         insertNewElement
     }
 }

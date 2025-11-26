@@ -1,11 +1,9 @@
-import { SorterStrategy } from '@/utils/arrays/animations'
+import { SorterStrategy } from '@/utils/arrays/sortingAlgorithms'
 import React, { createContext, useRef } from 'react'
-import gsap from 'gsap'
 
 interface ArraysProviderContextType {
     elements: number[],
     sortingStrategy: SorterStrategy,
-    tl: gsap.core.Timeline,
     svgRef: React.RefObject<SVGSVGElement | null> | null
 }
 
@@ -13,7 +11,6 @@ interface ArraysProviderContextType {
 const initailValue: ArraysProviderContextType = {
     elements: [],
     svgRef: null,
-    tl: gsap.timeline(),
     sortingStrategy: new SorterStrategy()
 }
 export const ArraysProviderContent = createContext<ArraysProviderContextType>(initailValue)

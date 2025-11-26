@@ -1,5 +1,5 @@
 
-export const ArraysPsudoCodes = {
+export const ArraysAlgorithmsPsudoCodes = {
     BubbleSort: `for i from 0 to Array.length - 1
     set swapped to false
     for j from 0 to Array.length - i - 1
