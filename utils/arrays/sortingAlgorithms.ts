@@ -19,8 +19,8 @@ export class SelectionSort extends BaseSorter {
         this.pointerJ = undefined;
     }
 
-    sort(elements: number[], nodes: d3.BaseType[]): SequenceTupleType[] {
-        const translateValues = d3.select(nodes[0])
+    initializeBaseCoordinates(node: d3.BaseType) {
+        const translateValues = d3.select(node)
             .attr("transform")
             .match(parseTransformAttribute)!;
         this.baseX = +translateValues[1];
@@ -28,7 +28,10 @@ export class SelectionSort extends BaseSorter {
 
         this.pointerI = drawUpwardArrow("i")?.node();
         this.pointerJ = drawDownWardArrow("j")?.node();
+    }
 
+    sort(elements: number[], nodes: d3.BaseType[]): SequenceTupleType[] {
+        this.initializeBaseCoordinates(nodes[0])
 
         const sortingSequence: SequenceTupleType[] = []
         let n = elements.length;
@@ -47,11 +50,11 @@ export class SelectionSort extends BaseSorter {
                 })
                 if (elements[j] < elements[min_idx]) {
                     sortingSequence.push({
-                        args: [6, 3],
+                        args: [3],
                         command: "HIGHLIGHT"
                     })
                     sortingSequence.push({
-                        args: [6, 4],
+                        args: [4],
                         command: "HIGHLIGHT"
                     })
                     min_idx = j;
@@ -103,18 +106,56 @@ export class SelectionSort extends BaseSorter {
             .style("opacity", 0)
             .remove();
     }
-
 }
 
 
 export class InsertionSort extends BaseSorter {
+    initializeBaseCoordinates(node: d3.BaseType) {
+        const translateValues = d3.select(node)
+            .attr("transform")
+            .match(parseTransformAttribute)!;
+        this.baseX = +translateValues[1];
+        this.baseY = +translateValues[2];
+    }
 
     constructor() {
         super(0, 0, ArraysAlgorithmsPsudoCodes.InsertionSort);
     }
 
     sort(elements: number[], nodes: d3.BaseType[]): SequenceTupleType[] {
-        return []
+        this.initializeBaseCoordinates(nodes[0]);
+        const sequenceTuple: SequenceTupleType[] = [];
+        for (let i = 1; i < elements.length; i++) {
+            sequenceTuple.push({
+                command: "MOVEPOINTER",
+                args: [0, i, 0]
+            })
+            let key = elements[i];
+            let j = i - 1;
+
+            while (j >= 0 && elements[j] > key) {
+                sequenceTuple.push({
+                    command: "HIGHLIGHT",
+                    args: [3]
+                })
+                sequenceTuple.push({
+                    command: "SWAP",
+                    args: [j, j + 1, 4]
+                })
+                sequenceTuple.push({
+                    command: "HIGHLIGHT",
+                    args: [5]
+                })
+                elements[j + 1] = elements[j];
+                j = j - 1;
+            }
+            sequenceTuple.push({
+                command: "HIGHLIGHT",
+                args: [6]
+            })
+            elements[j + 1] = key;
+        }
+        return sequenceTuple;
     }
     destroyPointer(): void {
 
@@ -129,8 +170,56 @@ export class BubbleSort extends BaseSorter {
         super(0, 0, ArraysAlgorithmsPsudoCodes.BubbleSort);
     }
 
+    initializeBaseCoordinates(node: d3.BaseType) {
+        const translateValues = d3.select(node)
+            .attr("transform")
+            .match(parseTransformAttribute)!;
+        this.baseX = +translateValues[1];
+        this.baseY = +translateValues[2];
+    }
+
     sort(elements: number[], nodes: d3.BaseType[]): SequenceTupleType[] {
-        return []
+        this.initializeBaseCoordinates(nodes[0])
+
+        const sequenceTuple: SequenceTupleType[] = [];
+        let i, j, temp, n = elements.length;
+        let swapped;
+        for (i = 0; i < n - 1; i++) {
+            sequenceTuple.push({
+                command: "MOVEPOINTER",
+                args: [0, i, 0]
+            })
+            swapped = false;
+            for (j = 0; j < n - i - 1; j++) {
+                sequenceTuple.push({
+                    command: "MOVEPOINTER",
+                    args: [1, j, 2]
+                })
+                if (elements[j] > elements[j + 1]) {
+                    sequenceTuple.push({
+                        command: "HIGHLIGHT",
+                        args: [3]
+                    })
+                    sequenceTuple.push({
+                        command: "SWAP",
+                        args: [j, j + 1, 4]
+                    })
+                    temp = elements[j];
+                    elements[j] = elements[j + 1];
+                    elements[j + 1] = temp;
+                    swapped = true;
+                }
+            }
+
+            if (swapped == false) {
+                sequenceTuple.push({
+                    command: "HIGHLIGHT",
+                    args: [6]
+                })
+                break;
+            }
+        }
+        return sequenceTuple;
     }
     destroyPointer(): void {
 
@@ -139,6 +228,7 @@ export class BubbleSort extends BaseSorter {
 }
 
 export class QuickSort extends BaseSorter {
+
 
     constructor() {
         super(0, 0, ArraysAlgorithmsPsudoCodes.BubbleSort);
@@ -149,6 +239,10 @@ export class QuickSort extends BaseSorter {
         return []
     }
     destroyPointer(): void {
+
+    }
+
+    initializeBaseCoordinates(node: d3.BaseType): void {
 
     }
 
@@ -181,7 +275,7 @@ export class SorterStrategy {
         this.algoName = algo;
     }
 
-    public performSorting(elements: number[], callback: () => void) {
+    public performSorting(elements: number[], onComplete?: () => void, onUpdate?: (progress: number) => void) {
         const nodes = d3.select("svg").selectAll("g").nodes();
         const sortingSequence = this.sorter.sort(elements, nodes);
         sortingSequence.map(item => {
@@ -198,9 +292,15 @@ export class SorterStrategy {
             }
         })
 
+        if (onUpdate) {
+            this.sorter.tl.eventCallback("onUpdate", () => onUpdate(this.sorter.tl.progress() * 100))
+
+        }
         this.sorter.tl.eventCallback("onComplete", () => {
             this.sorter.destroyPointer()
-            callback();
+            if (onComplete) {
+                onComplete();
+            }
         })
     }
 }
