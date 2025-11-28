@@ -13,92 +13,70 @@ import { SortingAlgo } from "@/types/arrays"
 import clsx from 'clsx'
 import AnimationTracker from './AnimationTracker'
 
-/* ------------------------------
-   TYPES
---------------------------------*/
+
 type AnimationState = {
     progress: number
-    isPlaying: boolean
     playBackSpeed: number
 }
 
 type Action =
-    | { type: "playAnimation" }
-    | { type: "pauseAnimation" }
-    | { type: "togglePlayAndPause" }
     | { type: "moveForward" }
     | { type: "moveBackward" }
-    | { type: "speedUpAnimation" }
-    | { type: "slowDownAnimation" }
-    | { type: "setProgress"; payload: number }   // ✅ PAYLOAD ACTION
+    | { type: "setProgress"; payload: number }
+    | { type: "setPlayBackSpeed"; payload: number }
 
-/* ------------------------------
-   REDUCER
---------------------------------*/
-const animationReducer: React.Reducer<AnimationState, Action> = (
-    state,
-    action
-) => {
-    switch (action.type) {
-        case "togglePlayAndPause":
-            return { ...state, isPlaying: !state.isPlaying }
 
-        case "moveForward":
-            return { ...state, progress: state.progress + 0.5 }
 
-        case "moveBackward":
-            return { ...state, progress: state.progress - 0.5 }
-
-        case "speedUpAnimation":
-            return { ...state, playBackSpeed: state.playBackSpeed + 1 }
-
-        case "slowDownAnimation":
-            return {
-                ...state,
-                playBackSpeed: Math.max(1, state.playBackSpeed - 1),
-            }
-
-        case "playAnimation":
-            return { ...state, isPlaying: true }
-
-        case "pauseAnimation":
-            return { ...state, isPlaying: false }
-
-        case "setProgress":   // ✅ NEW PAYLOAD HANDLER
-            return {
-                ...state,
-                progress: action.payload
-            }
-
-        default:
-            return state
-    }
-}
-
-/* ------------------------------
-   INITIAL STATE
---------------------------------*/
 const initialAnimationState: AnimationState = {
-    isPlaying: false,
     progress: 0,
     playBackSpeed: 1,
 }
 
-/* ------------------------------
-   COMPONENT
---------------------------------*/
 const SortingController: React.FC<{
     isSorting: boolean
     setIsSorting: React.Dispatch<React.SetStateAction<boolean>>
 }> = ({ isSorting, setIsSorting }) => {
     const { sortingStrategy, elements } = useArraysProvider()
-    const [selectedAlgo, setSelectedAlgo] = useState<SortingAlgo>("SelectionSort")
+    const animationReducer: React.Reducer<AnimationState, Action> = (
+        state,
+        action
+    ) => {
+        switch (action.type) {
 
-    const [state, dispatch] = useReducer(animationReducer, initialAnimationState)
+            case "moveForward":
+                return { ...state, progress: state.progress + 0.5 }
 
-    /* ------------------------------
-       HANDLERS
-    --------------------------------*/
+            case "moveBackward":
+                return { ...state, progress: state.progress - 0.5 }
+
+            case 'setPlayBackSpeed':
+                if (action.payload === -1) {
+                    return {
+                        ...state,
+                        playBackSpeed: Math.max(1, state.playBackSpeed - 1)
+                    }
+                } else {
+                    return {
+                        ...state,
+                        playBackSpeed: Math.min(3, state.playBackSpeed + 1)
+                    }
+                }
+
+            case "setProgress":
+                return {
+                    ...state,
+                    progress: action.payload
+                }
+
+            default:
+                return state
+        }
+    }
+    const [selectedAlgo, setSelectedAlgo] = useState<SortingAlgo>("QuickSort")
+    const [state, dispatch] = useReducer(animationReducer, initialAnimationState);
+
+
+
 
     const handleSelect = (algo: string) => {
         sortingStrategy.setSorter(algo as SortingAlgo)
@@ -106,33 +84,39 @@ const SortingController: React.FC<{
     }
 
     const handleSortingClick = () => {
-        setIsSorting(prev => !prev)
+        setIsSorting(true)
 
         sortingStrategy.performSorting(
             elements,
-            () => dispatch({ type: "pauseAnimation" }),  // stop animation on finish
-            (temp: number) => dispatch({                 // temp = progress from callback
-                type: "setProgress",
-                payload: temp
-            })
+            () => setIsSorting(pre => false),
+            (updatedProgress) => dispatch({ type: "setProgress", payload: updatedProgress })
         )
     }
 
     const handlePlayAndPause = () => {
-        dispatch({ type: "togglePlayAndPause" })
-
-        if (state.isPlaying) sortingStrategy.sorter.stop()
-        else sortingStrategy.sorter.play()
+        if (sortingStrategy.sorter.isPaused()) {
+            sortingStrategy.sorter.play();
+            setIsSorting(true);
+        } else {
+            sortingStrategy.sorter.stop();
+            setIsSorting(false);
+        }
     }
 
+
     const handleMoveForward = () => {
-        dispatch({ type: "moveForward" })
         sortingStrategy.sorter.tl.time(state.progress + 0.5)
+        dispatch({ type: "moveForward" })
     }
 
     const handleMoveBackWard = () => {
-        dispatch({ type: "moveBackward" })
         sortingStrategy.sorter.tl.time(state.progress - 0.5)
+        dispatch({ type: "moveBackward" })
+    }
+
+    const handlePlayBackSpeed = (speed: number) => {
+        sortingStrategy.sorter.tl.timeScale(2)
+        dispatch({ payload: speed, type: "setPlayBackSpeed" })
     }
 
     return (
@@ -175,7 +159,7 @@ const SortingController: React.FC<{
                 </section>
 
                 <PsudoCodeViewer
-                    isAlgoRunning={isSorting}
+                    isAlgoRunning={state.progress > 0 && state.progress < 100}
                     psudoCode={sortingStrategy.sorter.psudoCode}
                     algoName={sortingStrategy.algoName}
                 />
@@ -183,6 +167,9 @@ const SortingController: React.FC<{
 
             <AnimationTracker
                 progress={state.progress}
+                isPause={isSorting}
+                playBackSpeed={state.playBackSpeed}
+                handlePlayBackSpeed={handlePlayBackSpeed}
                 handleMoveBackWard={handleMoveBackWard}
                 handleMoveForward={handleMoveForward}
                 handleTogglePlayAndPause={handlePlayAndPause}

@@ -11,10 +11,13 @@ import { CirclePlus } from 'lucide-react';
 
 const AnimationTracker: React.FC<{
     progress: number,
+    isPause: boolean,
+    playBackSpeed: number,
     handleTogglePlayAndPause: () => void
     handleMoveForward: () => void,
-    handleMoveBackWard: () => void
-}> = ({ progress, handleMoveBackWard, handleMoveForward, handleTogglePlayAndPause }) => {
+    handleMoveBackWard: () => void,
+    handlePlayBackSpeed: (speed: number) => void
+}> = ({ progress, isPause, playBackSpeed, handleMoveBackWard, handleMoveForward, handleTogglePlayAndPause, handlePlayBackSpeed }) => {
     return (
         <Activity mode={(progress > 0 && progress < 100) ? "visible" : "hidden"}>
             <div className="absolute bottom-15 left-[8%] right-[50%] h-fit flex flex-col justify-centers items-center gap-5">
@@ -22,16 +25,16 @@ const AnimationTracker: React.FC<{
                 <div className="flex flex-row items-center gap-11">
                     <div className="flex gap-2">
                         <FastForward onClick={handleMoveBackWard} className="rotate-180" />
-                        <Play onClick={handleTogglePlayAndPause} />
-                        <CirclePause onClick={handleTogglePlayAndPause} />
+                        {isPause && <Play onClick={handleTogglePlayAndPause} />}
+                        {!isPause && <CirclePause onClick={handleTogglePlayAndPause} />}
                         <FastForward onClick={handleMoveForward} />
                     </div>
                     <div className="flex gap-2 items-center justify-center">
-                        <CirclePlus />
-                        <CircleMinus />
+                        <CirclePlus onClick={() => handlePlayBackSpeed(1)} />
+                        <CircleMinus onClick={() => handlePlayBackSpeed(-1)} />
                         <CircleGauge />
                         <span className="font-bold text-xl ">
-                            1X
+                            {playBackSpeed} X
                         </span>
                     </div>
 

@@ -1,5 +1,7 @@
+import { SortingAlgo } from "@/types/arrays";
 
-export const ArraysAlgorithmsPsudoCodes = {
+export const ArraysAlgorithmsPsudoCodes: Record<SortingAlgo, string> = {
+
     BubbleSort: `for i from 0 to Array.length - 1
     set swapped to false
     for j from 0 to Array.length - i - 1
@@ -22,7 +24,29 @@ export const ArraysAlgorithmsPsudoCodes = {
         for j = i + 1 to n - 1:
             if array[j] < array[min_index]:
                 min_index = j
-        swap(array[i], array[min_index])   `
+        swap(array[i], array[min_index])   `,
+
+    QuickSort: `function quickSort(arr,left, right)
+    if left<right:
+        pivot = A[right]
+        partitionPoint = partition(left, right, pivot)
+        quickSort(left, partitionPoint - 1)
+        quickSort(partitionPoint + 1, right)
+    end if
+end function!   
+
+function partition(arr, low, high)
+    pivot = arr[high]
+    i = low - 1
+    for j = low to high - 1
+        if arr[j] <= pivot
+            i = i + 1
+            swap arr[i] and arr[j]
+        end if
+    end for
+    swap arr[i + 1] and arr[high]
+    return i + 1
+end function   `
 }
 
 export const ArraysElementsDimentions = {

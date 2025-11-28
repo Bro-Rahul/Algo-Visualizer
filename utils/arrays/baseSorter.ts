@@ -2,7 +2,7 @@ import gsap from "gsap/all";
 import * as d3 from "d3"
 import { SequenceTupleType } from "@/types/arrays";
 
-export abstract class BaseSorter {
+abstract class BaseSorter {
     tl = gsap.timeline();
     psudoCode: string;
     baseX: number
@@ -15,7 +15,6 @@ export abstract class BaseSorter {
     }
 
     abstract sort(elements: number[], nodes: d3.BaseType[]): SequenceTupleType[]
-    abstract destroyPointer(): void
     abstract initializeBaseCoordinates(node: d3.BaseType): void;
     /**
      * Performs a swap operation between two nodes based on the values provided
@@ -153,4 +152,14 @@ export abstract class BaseSorter {
         return this.tl.paused();
     }
 
+    destroyPointer(): void {
+        d3.selectAll(".pointer")
+            .transition()
+            .duration(300)
+            .style("filter", "blur(6px)")
+            .style("opacity", 0)
+            .remove();
+    }
 }
+
+export default BaseSorter;

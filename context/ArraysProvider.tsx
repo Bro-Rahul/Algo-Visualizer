@@ -1,4 +1,4 @@
-import { SorterStrategy } from '@/utils/arrays/sortingAlgorithms'
+import SorterStrategy from '@/utils/arrays/sortingStrategy'
 import React, { createContext, useRef } from 'react'
 
 interface ArraysProviderContextType {
