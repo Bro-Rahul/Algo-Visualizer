@@ -1,0 +1,17 @@
+import { ArraysAlgorithmsPsudoCodes } from '@/constants/data'
+import clsx from 'clsx'
+
+const PsudoCodeVisualizer = () => {
+    return (
+        <div className='bg-secondary/50 rounded-4xl flex flex-col p-5 shadow-2xl border-2 shadow-secondary gap-3'>
+            <h1 className='text-center text-xl font-bold'>Psudo Code</h1>
+            <div className='w-full h-full bg-accent p-3 rounded-xl'>
+                <pre>
+                    {ArraysAlgorithmsPsudoCodes.BubbleSort.split("\n").map((lines, idx) => <code id={`code-${idx}`} className={clsx(`block px-1 rounded-xs text-wrap`)} key={lines}>{lines}</code>)}
+                </pre>
+            </div>
+        </div>
+    )
+}
+
+export default PsudoCodeVisualizer

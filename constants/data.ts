@@ -1,4 +1,5 @@
 import { SortingAlgo } from "@/types/arrays";
+import svgs from "./svgs";
 
 export const ArraysAlgorithmsPsudoCodes: Record<SortingAlgo, string> = {
 
@@ -58,3 +59,37 @@ export const ArraysElementsDimentions = {
     strokeWidth: 2,
     totalWidth: 55
 };
+
+
+export const SortingAlgoDetails = [
+    {
+        name: "Bubble Sort",
+        svg: svgs.bubbleSortSvg,
+        href: "bubble-sort",
+        description: 'A simple comparison-based algorithm where adjacent elements are swapped if they are in the wrong order'
+    },
+    {
+        name: "Insertion Sort",
+        svg: svgs.insertionSortSvg,
+        href: "insertion-sort",
+        description: 'Builds the final sorted list one item at a time.'
+    },
+    {
+        name: "Selection Sort",
+        svg: svgs.selectiontSvg,
+        href: "selection-sort",
+        description: 'Repeatedly selects the smallest element and moves it to the sorted part of the list.'
+    },
+    {
+        name: "Quick Sort",
+        svg: svgs.quickSortSvg,
+        href: "quick-sort",
+        description: 'A divide-and-conquer algorithm using a pivot to partition elements.'
+    },
+    {
+        name: "Merged Sort",
+        svg: svgs.mergedSortSvg,
+        href: "merged-Sort",
+        description: 'Recursively splits the list and merges sorted halves.'
+    },
+]

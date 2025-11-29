@@ -11,7 +11,7 @@ interface ArraysProviderContextType {
 const initailValue: ArraysProviderContextType = {
     elements: [],
     svgRef: null,
-    sortingStrategy: new SorterStrategy()
+    sortingStrategy: new SorterStrategy("BubbleSort")
 }
 export const ArraysProviderContent = createContext<ArraysProviderContextType>(initailValue)
 

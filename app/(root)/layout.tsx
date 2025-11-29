@@ -6,22 +6,22 @@ import Header from "@/components/utils/Header";
 const rubik = localFont({
   src: [
     {
-      path: "../public/fonts/Rubik-Light.ttf",
+      path: "../../public/fonts/Rubik-Light.ttf",
       weight: "300",
       style: "normal",
     },
     {
-      path: "../public/fonts/Rubik-Regular.ttf",
+      path: "../../public/fonts/Rubik-Regular.ttf",
       weight: "400",
       style: "normal",
     },
     {
-      path: "../public/fonts/Rubik-Medium.ttf",
+      path: "../../public/fonts/Rubik-Medium.ttf",
       weight: "500",
       style: "normal",
     },
     {
-      path: "../public/fonts/Rubik-Bold.ttf",
+      path: "../../public/fonts/Rubik-Bold.ttf",
       weight: "700",
       style: "normal",
     },

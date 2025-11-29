@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { ArraysProviderContent } from "@/context/ArraysProvider";
-import { generateArrays } from "@/utils/arrays";
+import { generateArrays, generateRandomNumbers } from "@/utils/arrays";
 
 const useArraysProvider = () => {
 
@@ -9,14 +9,20 @@ const useArraysProvider = () => {
 
     const insertNewElement = () => {
         elements.push(Math.floor(Math.random() * 100));
-        generateArrays(elements);
+        generateArrays(elements, svgRef?.current!);
+    }
+
+    const addRandomElements = (count: number) => {
+        elements.push(...generateRandomNumbers(count))
+        generateArrays(elements, svgRef?.current!);
     }
 
     return {
         elements,
         svgRef,
         sortingStrategy,
-        insertNewElement
+        insertNewElement,
+        addRandomElements
     }
 }
 

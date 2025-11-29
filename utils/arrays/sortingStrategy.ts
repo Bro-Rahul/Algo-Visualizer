@@ -23,9 +23,9 @@ class SorterStrategy {
     algoName: string;
 
 
-    constructor() {
-        this.sorter = new QuickSort();
-        this.algoName = "Quick Sort"
+    constructor(algoName: SortingAlgo) {
+        this.sorter = getSorter(algoName);
+        this.algoName = algoName;
     }
 
     public setSorter(algo: SortingAlgo) {
@@ -34,7 +34,7 @@ class SorterStrategy {
     }
 
     public performSorting(elements: number[], onComplete?: () => void, onUpdate?: (progress: number) => void) {
-        const nodes = d3.select("svg").selectAll("g").nodes();
+        const nodes = d3.select("#canvas").selectAll("g").nodes();
         const sortingSequence = this.sorter.sort(elements, nodes);
         sortingSequence.map(item => {
             switch (item.command) {

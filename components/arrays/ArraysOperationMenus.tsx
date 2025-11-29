@@ -9,17 +9,17 @@ const ArraysOperationMenus: React.FC<{
 }> = ({ isSorting }) => {
 
     const [showMenu, setShowMenu] = useState<boolean>(false);
-    const { elements, insertNewElement } = useArraysProvider();
+    const { elements, insertNewElement, svgRef } = useArraysProvider();
 
 
     const handleGenerateRandom = () => {
         elements.push(...generateRandomNumbers(10))
-        generateArrays(elements)
+        generateArrays(elements, svgRef?.current!)
     }
 
     useEffect(() => {
         elements.push(...generateRandomNumbers(5))
-        generateArrays(elements)
+        generateArrays(elements, svgRef?.current!)
     }, [])
 
     return (

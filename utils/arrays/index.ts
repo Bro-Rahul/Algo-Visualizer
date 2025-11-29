@@ -7,8 +7,9 @@ const { gap, height, width, roundedEdge, strokeColor, strokeWidth } = ArraysElem
 export const generateRandomNumbers = (total: number = 5) => {
     return Array.from({ length: total }, () => Math.round(Math.random() * 100));
 }
+
 export const generateArrays = (elements: number[]) => {
-    const svg = d3.select("svg");
+    const svg = d3.select("#canvas");
 
     const grps = svg.selectAll("g")
         .data(elements)
@@ -52,10 +53,12 @@ export const generateArrays = (elements: number[]) => {
         .attr("font-size", "18px")
         .text(d => d);
 };
+
 export const drawUpwardArrow = (
     label: string,
 ) => {
-    const svg = d3.select("svg");
+    // const svg = d3.select("svg");
+    const svg = d3.select("#canvas")
     const selection = svg.select("g");
 
     const transform = selection.attr("transform");
@@ -100,7 +103,9 @@ export const drawUpwardArrow = (
 export const drawDownWardArrow = (
     lable: string,
 ) => {
-    const svg = d3.select("svg");
+    // const svg = d3.select("svg");
+    const svg = d3.select("#canvas")
+
     const selection = svg.select("g")
     const transform = selection.attr("transform");
     if (!transform) return;
