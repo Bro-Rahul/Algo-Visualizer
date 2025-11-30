@@ -1,15 +1,18 @@
 import { Progress } from '../ui/progress'
 import { Button } from '../ui/button'
+import SpeedIndicator from './SpeedController'
 
 interface ControllerProps {
     isPlayling: boolean,
     progress: number,
+    animationSpeed: number,
+    setAnimationSpeed: (speed: number) => void,
     inserRandomElements: (len: number) => void
     handleSorting: () => void
     togglePlayAndPause: () => void
 }
 
-const Controller = ({ isPlayling, progress, togglePlayAndPause, inserRandomElements, handleSorting }: ControllerProps) => {
+const Controller = ({ isPlayling, progress, animationSpeed, setAnimationSpeed, togglePlayAndPause, inserRandomElements, handleSorting }: ControllerProps) => {
     return (
         <div className='bg-secondary/50 rounded-4xl flex flex-col p-5 shadow-2xl border-2 shadow-secondary gap-3'>
             <h1 className='text-center text-xl font-bold'>Controller</h1>
@@ -68,9 +71,9 @@ const Controller = ({ isPlayling, progress, togglePlayAndPause, inserRandomEleme
                         Random 1
                     </Button>
                 </div>
-                <p className='font-normal text-md text-primary/90'>Speed</p>
-                <Progress
-                    value={50}
+                <SpeedIndicator
+                    animationSpeed={animationSpeed}
+                    setAnimationSpeed={setAnimationSpeed}
                 />
                 <p
                     className='font-normal text-md text-primary/90'

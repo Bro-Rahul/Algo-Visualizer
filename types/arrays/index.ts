@@ -3,7 +3,7 @@
  */
 export type SortingAlgo = "BubbleSort" | "InsertionSort" | "SelectionSort" | "QuickSort"
 
-export type OperationsType = "SWAP" | "HIGHLIGHT" | "MOVEPOINTER" | "PIVOT"
+export type OperationsType = "SWAP" | "HIGHLIGHT" | "MOVEPOINTER" | "PIVOT" | "Comparisions"
 
 
 export type SequenceTupleType = {

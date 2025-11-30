@@ -137,6 +137,20 @@
       hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(145,173,201,0.35)]
       hover:border-[#91ADC9] hover:bg-[#2b3958]/50;
   }
+  .scrollbar::-webkit-scrollbar {
+    width: 20px;
+    height: 20px;
+  }
+
+  .scrollbar::-webkit-scrollbar-track {
+    border-radius: 100vh;
+    background: var(--color-primary);
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-secondary);;
+    border-radius: 100vh;
+  }
 }
 
 @layer utilities {

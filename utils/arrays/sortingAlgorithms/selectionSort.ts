@@ -47,11 +47,11 @@ class SelectionSort extends BaseSorter {
                     args: [1, j, 2],
                     command: "MOVEPOINTER"
                 })
+                sortingSequence.push({
+                    args: [3],
+                    command: "Comparisions"
+                })
                 if (elements[j] < elements[min_idx]) {
-                    sortingSequence.push({
-                        args: [3],
-                        command: "HIGHLIGHT"
-                    })
                     sortingSequence.push({
                         args: [4],
                         command: "HIGHLIGHT"

@@ -21,11 +21,15 @@ function getSorter(algo: SortingAlgo): BaseSorter {
 class SorterStrategy {
     sorter: BaseSorter;
     algoName: string;
+    swaps: number;
+    totalComparision: number
 
 
     constructor(algoName: SortingAlgo) {
         this.sorter = getSorter(algoName);
         this.algoName = algoName;
+        this.swaps = 0;
+        this.totalComparision = 0;
     }
 
     public setSorter(algo: SortingAlgo) {
@@ -33,15 +37,32 @@ class SorterStrategy {
         this.algoName = algo;
     }
 
+    public setAnimationSpeed = (speed: number) => {
+        this.sorter.tl.timeScale(speed);
+    }
+    public resetStates = () => {
+        this.swaps = 0;
+        this.totalComparision = 0;
+    }
+
     public performSorting(elements: number[], onComplete?: () => void, onUpdate?: (progress: number) => void) {
+        this.resetStates();
         const nodes = d3.select("#canvas").selectAll("g").nodes();
         const sortingSequence = this.sorter.sort(elements, nodes);
         sortingSequence.map(item => {
             switch (item.command) {
                 case "SWAP":
-                    this.sorter.swap(item, nodes);
+                    const [srcIdx, targetIdx] = item.args;
+                    if (srcIdx != targetIdx) {
+                        this.sorter.swap(item, nodes);
+                        this.swaps += 1;
+                    }
                     break;
                 case "HIGHLIGHT":
+                    this.sorter.highLigth(item, nodes);
+                    break;
+                case "Comparisions":
+                    this.totalComparision += 1;
                     this.sorter.highLigth(item, nodes);
                     break;
                 default:
