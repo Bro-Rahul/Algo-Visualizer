@@ -18,6 +18,10 @@ const Page = () => {
           <ChartBarIncreasing className="-rotate-90" />
           <p className="font-bold text-md">Sorting Algorithms </p>
         </Link>
+        <Link href="/recursion" className="bg-secondary p-5 rounded-xl flex gap-2 cursor-pointer">
+          <ChartBarIncreasing className="-rotate-90" />
+          <p className="font-bold text-md">Recursion Tree  </p>
+        </Link>
       </div>
     </div>
   );
