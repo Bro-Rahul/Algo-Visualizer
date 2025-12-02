@@ -1,4 +1,3 @@
-import useArraysProvider from "@/hooks/useArraysProvider";
 import { generateArrays } from "@/utils/arrays";
 import { forwardRef, useEffect, useRef } from "react";
 
