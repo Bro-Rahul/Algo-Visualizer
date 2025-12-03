@@ -1,4 +1,5 @@
 import { FunctionMetaDetails, ParameterType } from '@/types/recursion';
+import { FunctionStateCapture } from '@/utils/recursion';
 import React, { useState } from 'react'
 import ts, { preProcessFile } from "typescript"
 
@@ -65,8 +66,45 @@ const useCodeParser = () => {
         }))
     }
 
+    const formatedCode = (userCode: string, paramsList: ParameterType[], functionName: string) => {
+        const safeUserCode = userCode.replace(/`/g, "\\`");
+
+        const regex = new RegExp(functionName, "g");
+        let matchIndex = 0;
+        const updatedUserCode = safeUserCode.replace(regex, (match) => {
+            matchIndex++;
+            return matchIndex === 1 ? match : "wrapperFunction";
+        });
+        const args = paramsList
+            .map(item => JSON.stringify(JSON.parse(item.parameterVal)))
+            .join(",");
+
+        const template = `
+type FunctionCallStackType<T, R> = {
+    id: number,
+    children: FunctionCallStackType<T, R>[],
+    parent: number | null,
+    params: T,
+    returnVal: R | null,
+};
+
+${FunctionStateCapture.toString()}
+
+${updatedUserCode}
+
+const state = new FunctionStateCapture<typeof ${functionName}>();
+const wrapperFunction = state.getWrapperfunction(${functionName});
+wrapperFunction(${args});
+console.log(JSON.stringify(state.getHierarchyData()));
+`;
+
+        return template.trim();
+    };
+
+
     return {
         functionMetaDetails,
+        formatedCode,
         setInputsParameterValue,
         setListOfParameters
     }

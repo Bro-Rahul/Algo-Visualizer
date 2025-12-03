@@ -1,7 +1,6 @@
 import { FunctionCallStackType } from "@/types/recursion";
 
 
-
 export class FunctionStateCapture<T extends (...args: any[]) => any> {
 
     states: FunctionCallStackType<Parameters<T>, ReturnType<T>>[];
@@ -48,9 +47,6 @@ export class FunctionStateCapture<T extends (...args: any[]) => any> {
 
     public getFunctionCaptureStates() {
         return this.states;
-    }
-    public getParameterType() {
-        return
     }
 }
 

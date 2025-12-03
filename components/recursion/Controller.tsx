@@ -22,14 +22,26 @@ function fibonacci(n: number): number {
 const Controller = () => {
     const [show, setShow] = useState<boolean>(true);
     const [code, setCode] = useState<string>('');
-    const { functionMetaDetails, setListOfParameters, setInputsParameterValue } = useCodeParser();
+    const { functionMetaDetails, formatedCode, setListOfParameters, setInputsParameterValue } = useCodeParser();
 
     const handleSubmit = () => {
         setListOfParameters(code);
     }
 
-    const handleRun = () => {
-        // at this point the inputs and inputs values are collect now it is ready to call the backend api to get the output states
+    const handleRun = async () => {
+        const response = await fetch("http://localhost:3000/api/submit", {
+            method: "POST",
+            body: JSON.stringify({
+                "code": formatedCode(code, functionMetaDetails.params, functionMetaDetails.functionName)
+            })
+        })
+        if (!response.ok) {
+
+        } else {
+            const data = await response.json()
+            const result = JSON.parse(data);
+            console.log(result)
+        }
     }
 
     return (
