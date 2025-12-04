@@ -3,21 +3,12 @@ import clsx from 'clsx';
 import { PanelRight, PanelRightOpen } from 'lucide-react';
 import { useState } from 'react'
 
+
 interface DisplayFunctionCallStackProps {
-    data: FunctionCallStackType<any[], any>[]
-}
-type FormateDataType = {
-    params: any[],
-    returnVal: any,
-
+    treeData: FunctionCallStackType<any, any> | null
 }
 
-function formateData(data: FunctionCallStackType<any[], any>[]) {
-    const formatedData = [];
-
-}
-
-const DisplayFunctionCallStack = ({ data }: DisplayFunctionCallStackProps) => {
+const DisplayFunctionCallStack = ({ treeData }: DisplayFunctionCallStackProps) => {
     const [show, setShow] = useState<boolean>(false);
 
     return (

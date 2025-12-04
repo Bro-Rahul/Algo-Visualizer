@@ -1,40 +1,16 @@
-import { FunctionMetaDetails, ParameterType } from '@/types/recursion';
-import { FunctionStateCapture } from '@/utils/recursion';
-import React, { useState } from 'react'
-import ts, { preProcessFile } from "typescript"
+import { FunctionCallStackType, FunctionMetaDetails, ParameterType } from '@/types/recursion';
+import { getFormatedCode, parseCode } from '@/utils/recursion';
+import { useRef, useState } from 'react'
+import ts from "typescript"
 
 
 
 
 const useCodeParser = () => {
-
     const [functionMetaDetails, setFunctionMetaDetails] = useState<FunctionMetaDetails>({ functionName: "", params: [], returnVal: '' });
-
-    const parseCode = (node: ts.Node, result: FunctionMetaDetails) => {
-        if (ts.isFunctionDeclaration(node)) {
-            result.params = node.parameters.map(p => ({
-                key: p.name.getText(),
-                keyType: p.type ? p.type.getText() : "any",
-                parameterVal: ''
-            }));
-            result.functionName = node.name?.text ?? "(anonymous)";
-        }
-
-        if (ts.isVariableDeclaration(node) && node.initializer && ts.isArrowFunction(node.initializer)) {
-
-            const fn = node.initializer;
-
-            result.params = fn.parameters.map(p => ({
-                key: p.name.getText(),
-                keyType: p.type ? p.type.getText() : "any",
-                parameterVal: ''
-            }));
-
-            result.functionName = node.name.getText();
-        }
-
-        ts.forEachChild(node, child => parseCode(child, result));
-    };
+    const svgRef = useRef<SVGSVGElement | null>(null);
+    // typecasting to any as we can't get the exact types as we do not have the actula user function in the code 
+    const [recursionData, setRecursionData] = useState<FunctionCallStackType<any, any> | null>(null);
 
 
     const setListOfParameters = (code: string) => {
@@ -66,45 +42,15 @@ const useCodeParser = () => {
         }))
     }
 
-    const formatedCode = (userCode: string, paramsList: ParameterType[], functionName: string) => {
-        const safeUserCode = userCode.replace(/`/g, "\\`");
-
-        const regex = new RegExp(functionName, "g");
-        let matchIndex = 0;
-        const updatedUserCode = safeUserCode.replace(regex, (match) => {
-            matchIndex++;
-            return matchIndex === 1 ? match : "wrapperFunction";
-        });
-        const args = paramsList
-            .map(item => JSON.stringify(JSON.parse(item.parameterVal)))
-            .join(",");
-
-        const template = `
-type FunctionCallStackType<T, R> = {
-    id: number,
-    children: FunctionCallStackType<T, R>[],
-    parent: number | null,
-    params: T,
-    returnVal: R | null,
-};
-
-${FunctionStateCapture.toString()}
-
-${updatedUserCode}
-
-const state = new FunctionStateCapture<typeof ${functionName}>();
-const wrapperFunction = state.getWrapperfunction(${functionName});
-wrapperFunction(${args});
-console.log(JSON.stringify(state.getHierarchyData()));
-`;
-
-        return template.trim();
-    };
-
+    const setResults = async (result: FunctionCallStackType<any, any>) => {
+        setRecursionData(pre => result);
+    }
 
     return {
+        svgRef,
         functionMetaDetails,
-        formatedCode,
+        recursionData,
+        setResults,
         setInputsParameterValue,
         setListOfParameters
     }

@@ -4,43 +4,37 @@ import { useState } from 'react'
 import clsx from 'clsx'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
-import useCodeParser from '@/hooks/useCodeParser'
+import { FunctionMetaDetails } from '@/types/recursion'
+import { getFormatedCode } from '@/utils/recursion'
+import { FunctionCallStackType } from '@/types/recursion'
 
+interface ControllerProps {
+    functionMetaDetails: FunctionMetaDetails,
+    handleSetResult: (result: FunctionCallStackType<any, any>) => void
+    handleCodeSubmit: (code: string) => void,
+    handleSetInputParameters: (idx: number, val: string) => void
+}
 
-function fibonacciDP(n: number, memo: number[]): number {
-    if (n <= 1) return n;
-    memo[n] = fibonacciDP(n - 1, memo) + fibonacciDP(n - 2, memo);
-    return memo[n];
-};
-
-function fibonacci(n: number): number {
-    if (n <= 1) return n;
-    return fibonacci(n - 1) + fibonacci(n - 2);
-};
-
-
-const Controller = () => {
+const Controller = ({ functionMetaDetails, handleSetResult, handleCodeSubmit, handleSetInputParameters }: ControllerProps) => {
     const [show, setShow] = useState<boolean>(true);
     const [code, setCode] = useState<string>('');
-    const { functionMetaDetails, formatedCode, setListOfParameters, setInputsParameterValue } = useCodeParser();
-
-    const handleSubmit = () => {
-        setListOfParameters(code);
-    }
 
     const handleRun = async () => {
+        const template = getFormatedCode(code, functionMetaDetails.params, functionMetaDetails.functionName);
         const response = await fetch("http://localhost:3000/api/submit", {
             method: "POST",
             body: JSON.stringify({
-                "code": formatedCode(code, functionMetaDetails.params, functionMetaDetails.functionName)
+                "code": template
             })
         })
         if (!response.ok) {
 
         } else {
             const data = await response.json()
-            const result = JSON.parse(data);
-            console.log(result)
+            // typecasting to any as we can't get the exact types as we do not have the actula user function in the code 
+            const result = (JSON.parse(data)) as FunctionCallStackType<any, any>;
+            console.log(result);
+            handleSetResult(result);
         }
     }
 
@@ -66,7 +60,7 @@ const Controller = () => {
                         className='flex-1 bg-[#243647] text-amber-50 w-full p-3 rounded-2xl outline-none scrollbar resize-none'
                         placeholder='Paste the Recursive code...'
                     />
-                    <Button onClick={handleSubmit} className='bg-[#1280ED] text-white font-bold text-md hover:bg-[#1280ED]/90 cursor-pointer'>
+                    <Button onClick={() => handleCodeSubmit(code)} className='bg-[#1280ED] text-white font-bold text-md hover:bg-[#1280ED]/90 cursor-pointer'>
                         Submit Code
                     </Button>
                 </div>
@@ -83,7 +77,7 @@ const Controller = () => {
                                 <p>Parameter {params.key} : {params.keyType}</p>
                                 <Input
                                     value={functionMetaDetails.params[idx].parameterVal}
-                                    onChange={e => setInputsParameterValue(idx, e.target.value)}
+                                    onChange={e => handleSetInputParameters(idx, e.target.value)}
                                     className='bg-[#243647]'
                                     placeholder={`Value of ${params.key}`}
                                 />
