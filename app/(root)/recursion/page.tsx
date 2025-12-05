@@ -19,6 +19,7 @@ const page = () => {
                 treeData={recursionData}
             />
             <DisplayFunctionCallStack
+                functionName={functionMetaDetails.functionName}
                 treeData={recursionData}
             />
         </section>

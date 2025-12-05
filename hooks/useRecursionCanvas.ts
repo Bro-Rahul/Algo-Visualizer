@@ -1,5 +1,5 @@
 import { FunctionCallStackType } from '@/types/recursion';
-import { drawTree } from '@/utils/recursion/treeGeneration';
+import { DrawTree, drawTree, drawTreeAnimated } from '@/utils/recursion/treeGeneration';
 import React, { useEffect, useRef } from 'react'
 
 const useRecursionCanvas = (treeData: FunctionCallStackType<any, any> | null) => {
@@ -65,7 +65,8 @@ const useRecursionCanvas = (treeData: FunctionCallStackType<any, any> | null) =>
 
     useEffect(() => {
         if (treeData) {
-            drawTree(svgRef, treeData);
+            const treeGeneration = new DrawTree(treeData);
+            treeGeneration.drawTree()
         }
     }, [treeData]);
 

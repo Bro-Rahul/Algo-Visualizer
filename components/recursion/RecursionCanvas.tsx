@@ -14,13 +14,8 @@ const RecursionCanvas = ({ treeData }: RecursionCanvasProps) => {
         >
             <svg
                 ref={svgRef}
-                id="canvas"
-                style={{
-                    position: "absolute",
-                    left: 0,
-                    top: 0,
-                    overflow: "visible",
-                }}
+                id="recursion-canvas"
+                className="absolute top-0 left-0 overflow-visible"
             ></svg>
         </div>
     );

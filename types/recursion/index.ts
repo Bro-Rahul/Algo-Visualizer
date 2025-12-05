@@ -17,3 +17,12 @@ export type FunctionMetaDetails = {
     returnVal: any | null,
     functionName: string
 }
+
+// similar to FunctionCallStackType<T,R> but here children is different type which is use to show the function call made by each function call individuals use in the functionCallStack.tsx Component
+export type SimpleFunctionCallStackType = {
+    id: number,
+    params: any[],
+    children: number[],
+    parent: null | number,
+    returnVal: any,
+}

@@ -33,17 +33,16 @@ const Controller = ({ functionMetaDetails, handleSetResult, handleCodeSubmit, ha
             const data = await response.json()
             // typecasting to any as we can't get the exact types as we do not have the actula user function in the code 
             const result = (JSON.parse(data)) as FunctionCallStackType<any, any>;
-            console.log(result);
             handleSetResult(result);
         }
     }
 
     return (
         <div
-            className={clsx(
-                'absolute top-0 left-0 bottom-0 flex flex-col bg-[#121A21] rounded-br-2xl rounded-tr-2xl border-2  shadow-3xl transition-all duration-300 overflow-y-scroll scrollbar z-10',
-                !show && 'w-[3%]', show && 'w-[30%]'
-            )}
+            className={
+                clsx('absolute top-0 left-0 bottom-0 flex flex-col bg-[#121A21] rounded-br-2xl rounded-tr-2xl border-2  shadow-3xl transition-all duration-300 overflow-y-scroll scrollbar opacity-80 z-10',
+                    !show && 'w-[3%]',
+                    show && 'w-[30%]')}
         >
             {!show
                 ? <PanelRight className='m-2 cursor-pointer' onClick={() => setShow(p => !p)} />

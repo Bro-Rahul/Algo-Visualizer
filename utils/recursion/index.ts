@@ -1,4 +1,4 @@
-import { FunctionCallStackType, FunctionMetaDetails, ParameterType } from "@/types/recursion";
+import { FunctionCallStackType, FunctionMetaDetails, ParameterType, SimpleFunctionCallStackType } from "@/types/recursion";
 import ts from "typescript";
 
 
@@ -121,3 +121,13 @@ export const getFormatedCode = (
 
     return template;
 };
+
+export const formateData = (hierarchyData: FunctionCallStackType<any, any>, result: SimpleFunctionCallStackType[]) => {
+    result.push({
+        ...hierarchyData,
+        children: hierarchyData.children.map(item => item.id)
+    })
+    for (let i = 0; i < hierarchyData.children.length; i++) {
+        formateData(hierarchyData.children[i], result);
+    }
+}
