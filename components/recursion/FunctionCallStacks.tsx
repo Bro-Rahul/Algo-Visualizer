@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/accordion"
 import { FunctionCallStackType, SimpleFunctionCallStackType } from "@/types/recursion"
 import { formateData } from "@/utils/recursion/index"
-import { useEffect } from "react"
+import { useEffect, useRef, useState } from "react"
 
 interface FunctionCallStacksProps {
     functionStackData: FunctionCallStackType<any, any>
@@ -16,23 +16,28 @@ interface FunctionCallStacksProps {
 
 const FunctionCallStacks = ({ functionName, functionStackData }: FunctionCallStacksProps) => {
     const result: SimpleFunctionCallStackType[] = [];
+    const [end, setEnd] = useState<number>();
+    const containRef = useRef<HTMLDivElement | null>(null);
+    const visibileData = result.slice(0, end);
+
     formateData(functionStackData, result);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries[0].isIntersecting) {
-
+                    console.log(entries)
                 }
             },
             { threshold: 1 }
         );
+        observer.observe(containRef.current!)
     }, []);
 
     return (
-        <Accordion type="multiple" className=''>
+        <Accordion type="multiple" className='list-items' >
             {result.map(item => (
-                <AccordionItem key={item.id} value={`${item.id}`} className='bg-[#243647] rounded-xl px-3 '>
+                <AccordionItem key={item.id} value={`${item.id}`} ref={containRef} className='bg-[#243647] rounded-xl px-3 items'>
                     <AccordionTrigger className='font-bold text-lg text-wrap underline-none border-b-2  cursor-pointer '>{functionName} {item.id}</AccordionTrigger>
                     <AccordionContent className='p-2 font-semibold'>
                         <span className="block">ID {item.id}</span>

@@ -131,3 +131,8 @@ export const formateData = (hierarchyData: FunctionCallStackType<any, any>, resu
         formateData(hierarchyData.children[i], result);
     }
 }
+
+export const formateDataHerarchy = (hierarchyData: d3.HierarchyPointNode<FunctionCallStackType<any, any>>, result: FunctionCallStackType<any, any>[]) => {
+
+
+}

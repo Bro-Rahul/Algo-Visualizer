@@ -1,14 +1,15 @@
 import { FunctionCallStackType } from "@/types/recursion";
 import * as d3 from "d3";
-import { RefObject } from "react";
-
 
 
 export class DrawTree {
     rawTreeData: FunctionCallStackType<any, any>
+
     root: d3.HierarchyNode<FunctionCallStackType<any, any>>
+
     tree: d3.HierarchyPointNode<FunctionCallStackType<any, any>>;
-    linkGenerator;
+
+    static linkGenerator: d3.Link<any, d3.HierarchyPointLink<FunctionCallStackType<any, any>>, d3.HierarchyPointNode<FunctionCallStackType<any, any>>>;
 
     constructor(rawTreeData: FunctionCallStackType<any, any>) {
         this.rawTreeData = rawTreeData;
@@ -18,7 +19,7 @@ export class DrawTree {
             .nodeSize([100, 150])
         this.tree = treeLayout(this.root);
 
-        this.linkGenerator = d3.linkVertical<
+        DrawTree.linkGenerator = d3.linkVertical<
             d3.HierarchyPointLink<FunctionCallStackType<any, any>>,
             d3.HierarchyPointNode<FunctionCallStackType<any, any>>
         >()
@@ -28,20 +29,120 @@ export class DrawTree {
 
     static onClickEvent(grp: d3.Selection<SVGGElement, unknown, HTMLElement, any>, d: d3.HierarchyPointNode<FunctionCallStackType<any, any>>) {
         if (!d.children) return;
-        const nodes = grp.selectAll(`.node_${d.data.parent}_childrens`)
-            .data(d.children)
-            .join("circle")
-            .attr("class", d => `.node_${d.data.id}`)
-            .attr("cx", (d, i) => d.x)
-            .attr("cy", (d, i) => d.y)
-            .attr("r", 20)
-            .attr("stroke", "#ccc")
-            .attr("stroke-width", 3)
-            .attr("fill", d => d.height === 0 ? "green" : "yellow")
 
-        nodes.on("click", (e: MouseEvent, d) => {
-            grp.call(DrawTree.onClickEvent, d)
+        const parentIdx = d.data.id;
+        const parentX = d.x;
+        const parentY = d.y;
+
+        const isCollapsed = grp.selectAll(`.node_${parentIdx}_childrens`).empty();
+
+        if (!isCollapsed) {
+            const allDescendants = d.descendants();
+
+            allDescendants.forEach(child => {
+                const cid = child.data.id;
+
+                grp.selectAll(`.node_${cid}_childrens`)
+                    .transition()
+                    .duration(300)
+                    .attr("r", 0)
+                    .remove();
+
+                grp.selectAll(`.text_${cid}_childrens`)
+                    .transition()
+                    .duration(300)
+                    .style("opacity", 0)
+                    .remove();
+
+                grp.selectAll(`.link_${cid}_childrens`)
+                    .transition()
+                    .duration(300)
+                    .attr("stroke-dasharray", "0 100")
+                    .remove();
+            });
+
+            return;
+        }
+
+        const toRenderNodes = d.children;
+        const toRenderLinks = d.links().filter(item => item.source.data.id === parentIdx);
+
+        const nodes = grp.selectAll(`.node_${parentIdx}_childrens`)
+            .data(toRenderNodes)
+            .join(
+                enter =>
+                    enter
+                        .append("circle")
+                        .attr("cx", d => parentX)
+                        .attr("cy", d => parentY)
+                        .attr("class", d => `node_${parentIdx}_childrens`)
+                        .attr("id", d => `node_${d.data.id}`)
+                        .attr("r", 0)
+                        .attr("stroke", "#ccc")
+                        .attr("stroke-width", 3)
+                        .attr("fill", d => d.height === 0 ? "green" : "orange")
+                        .call(ele =>
+                            ele.transition()
+                                .duration(1000)
+                                .ease(d3.easeBackOut)
+                                .attr("cx", d => d.x)
+                                .attr("cy", d => d.y)
+                                .attr("r", 20)
+                        ),
+                update => update,
+                exit => exit
+
+            );
+
+        // ---- TEXT ----
+        grp.selectAll(`.text_${parentIdx}_childrens`)
+            .data(toRenderNodes)
+            .join(
+                enter => enter
+                    .append("text")
+                    .attr("class", `text_${parentIdx}_childrens`)
+                    .text(d => `ID ${d.data.id}`)
+                    .attr("x", parentX)
+                    .attr("y", parentY)
+                    .attr("fill", "white")
+                    .style("opacity", 0)
+                    .call(ele =>
+                        ele.transition()
+                            .duration(300)
+                            .style("opacity", 1)
+                            .attr("x", d => d.x - 60)
+                            .attr("y", d => d.y)
+                    ),
+                update => update,
+                exit => exit
+
+            );
+
+        grp.selectAll(`.link_${parentIdx}_childrens`)
+            .data(toRenderLinks)
+            .join(
+                enter =>
+                    enter
+                        .append("path")
+                        .attr("class", `link_${parentIdx}_childrens`)
+                        .attr("d", DrawTree.linkGenerator)
+                        .attr("fill", "none")
+                        .attr("stroke", "#ccc")
+                        .attr("stroke-width", 2)
+                        .attr("stroke-dasharray", "0 100")
+                        .call(ele =>
+                            ele.transition()
+                                .duration(500)
+                                .attr("stroke-dasharray", "100 0")
+                        ),
+                update => update,
+                exit => exit
+            );
+
+        nodes.on("click", (e, d) => {
+            grp.call(DrawTree.onClickEvent, d);
         });
+
     }
 
     drawTree() {
@@ -50,13 +151,13 @@ export class DrawTree {
         const grp = svg.append("g")
             .attr("transform", "translate(1000,100)")
 
-
         const root = this.tree.descendants()[0];
+        const idx = root.data.id;
 
-        const rootNode = grp.selectAll("circle")
+        const rootNode = grp.selectAll(`#node_${idx}`)
             .data([root])
             .join("circle")
-            .attr("class", d => `.node_${d.data.id}`)
+            .attr("id", `#node_${idx}`)
             .attr("cx", (d, i) => d.x)
             .attr("cy", (d, i) => d.y)
             .attr("r", 20)
@@ -65,167 +166,17 @@ export class DrawTree {
             .attr("fill", "red")
 
 
+        grp.selectAll(`#text_${idx}`)
+            .data([root])
+            .join("text")
+            .attr("id", `#text_${idx}`)
+            .text(d => `ID ${d.data.id}`)
+            .attr("x", d => d.x - 3 * 20)
+            .attr("y", d => d.y)
+            .attr('fill', 'white')
+
         rootNode.on("click", (e: MouseEvent, d) => {
             grp.call(DrawTree.onClickEvent, d)
         });
-
-        /*  grp.selectAll('text')
-         .data(this.tree.descendants())
-         .join("text")
-         .text(d => `ID ${d.data.id}`)
-         .attr("x", d => d.x - 3 * 20)
-         .attr("y", d => d.y)
-         .attr('fill', 'white')
- 
-     grp.selectAll("path")
-         .data(this.tree.links())
-         .join("path")
-         .attr("d", this.linkGenerator)
-         .attr("fill", "none")
-         .attr("stroke", "#ccc")
-         .attr("stroke-width", 2); */
     }
-
-    static drawChildrens(grp: d3.Selection<SVGGElement, unknown, null, undefined>, nodes: d3.HierarchyPointNode<FunctionCallStackType<any, any>>[]) {
-
-        grp.selectAll(`node-${nodes[0].data.parent}-child`)
-            .data(nodes)
-            .join("circle")
-            .attr("cx", d => d.x)
-            .attr("cy", d => d.y)
-            .attr("r", 20)
-            .attr("stroke", "#ccc")
-            .attr("stroke-width", 3)
-            .attr("fill", d => d.height === 0 ? "green" : null)
-            .on("click", (event, d) => {
-                grp.call((element) => {
-                    if (d.children) {
-                        element.call(drawChildrens, d.children);
-                    }
-                });
-            })
-    }
-}
-
-export function drawTree(svgRef: RefObject<SVGSVGElement | null>, treeData: FunctionCallStackType<any, any>) {
-    if (!svgRef.current) return;
-
-    const svg = d3.select(svgRef.current);
-    svg.selectAll("g").remove();
-    const grp = svg.append("g")
-        .attr("transform", "translate(1000,100)")
-
-    const root = d3.hierarchy<FunctionCallStackType<any, any>>(treeData);
-
-    const treeLayout = d3
-        .tree<FunctionCallStackType<any, any>>()
-        .nodeSize([100, 150])
-    const tree = treeLayout(root);
-
-    console.log(root.descendants());
-    console.log(root.links())
-
-    const linkGenerator = d3.linkVertical<
-        d3.HierarchyPointLink<FunctionCallStackType<any, any>>,
-        d3.HierarchyPointNode<FunctionCallStackType<any, any>>
-    >()
-        .x(d => d.x)
-        .y(d => d.y);
-
-
-    const circles = grp.selectAll("circle")
-        .data(tree.descendants())
-        .join("circle")
-        .attr("cx", (d, i) => d.x)
-        .attr("cy", (d, i) => d.y)
-        .attr("r", 20)
-        .attr("stroke", "#ccc")
-        .attr("stroke-width", 3);
-
-
-    grp.selectAll('text')
-        .data(tree.descendants())
-        .join("text")
-        .text(d => `ID ${d.data.id}`)
-        .attr("x", d => d.x - 3 * 20)
-        .attr("y", d => d.y)
-        .attr('fill', 'white')
-
-    grp.selectAll("path")
-        .data(tree.links())
-        .join("path")
-        .attr("d", linkGenerator)
-        .attr("fill", "none")
-        .attr("stroke", "#ccc")
-        .attr("stroke-width", 2);
-
-}
-
-export function drawTreeAnimated(svgRef: RefObject<SVGSVGElement | null>, treeData: FunctionCallStackType<any, any>) {
-    if (!svgRef.current) return;
-
-    const svg = d3.select(svgRef.current);
-    svg.selectAll("g").remove();
-    const grp = svg.append("g")
-        .attr("transform", "translate(1000,100)")
-
-    const root = d3.hierarchy<FunctionCallStackType<any, any>>(treeData);
-
-    const treeLayout = d3
-        .tree<FunctionCallStackType<any, any>>()
-        .nodeSize([100, 150])
-    const tree = treeLayout(root);
-
-    const nodes = tree.descendants();
-    const links = tree.links();
-
-    const linkGenerator = d3.linkVertical<
-        d3.HierarchyPointLink<FunctionCallStackType<any, any>>,
-        d3.HierarchyPointNode<FunctionCallStackType<any, any>>
-    >()
-        .x(d => d.x)
-        .y(d => d.y);
-
-    console.log(nodes[0])
-
-    const rootNode = grp.selectAll("circle")
-        .data([nodes[0]])
-        .join("circle")
-        .attr("class", d => `node-${d.data.id}`)
-        .attr("cx", nodes[0].x)
-        .attr("cy", nodes[0].y)
-        .attr("r", 20)
-        .attr("stroke", "#ccc")
-        .attr("stroke-width", 3)
-
-    rootNode.on("click", (event, d) => {
-        grp.call((element) => {
-            if (d.children) {
-                element.call(drawChildrens, d.children);
-            }
-        });
-    })
-}
-
-
-
-
-function drawChildrens(grp: d3.Selection<SVGGElement, unknown, null, undefined>, nodes: d3.HierarchyPointNode<FunctionCallStackType<any, any>>[]) {
-
-    grp.selectAll(`node-${nodes[0].data.parent}-child`)
-        .data(nodes)
-        .join("circle")
-        .attr("cx", d => d.x)
-        .attr("cy", d => d.y)
-        .attr("r", 20)
-        .attr("stroke", "#ccc")
-        .attr("stroke-width", 3)
-        .attr("fill", d => d.height === 0 ? "green" : null)
-        .on("click", (event, d) => {
-            grp.call((element) => {
-                if (d.children) {
-                    element.call(drawChildrens, d.children);
-                }
-            });
-        })
 }
